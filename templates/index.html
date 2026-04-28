@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#0b0d12"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>Shorts Bot</title>
+<link rel="manifest" href="/static/manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#0b0d12;--surface:#12151f;--border:#1e2235;--accent:#7c6dfa;--green:#4dfa9a;--red:#fa6d6d;--text:#dde2f0;--muted:#4a5070}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh;max-width:480px;margin:0 auto;padding-bottom:40px}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-family:'IBM Plex Mono',monospace;font-size:1rem;color:var(--accent);letter-spacing:2px}
+.lic-badge{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;padding:4px 10px;border-radius:999px;border:1px solid var(--muted);color:var(--muted)}
+.lic-badge.active{border-color:var(--green);color:var(--green)}
+.screen{display:none;padding:24px 20px}
+.screen.active{display:block}
+.center-card{display:flex;flex-direction:column;align-items:center;padding-top:60px}
+.big-icon{font-size:3rem;margin-bottom:16px}
+h1{font-size:1.5rem;font-weight:700;margin-bottom:6px}
+.subtitle{color:var(--muted);font-size:0.85rem;margin-bottom:32px;text-align:center}
+.input-label{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:1px;margin-bottom:6px;display:block}
+input[type=text]{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:1rem;padding:14px 16px;border-radius:10px;outline:none;letter-spacing:2px;text-align:center}
+input[type=text]:focus{border-color:var(--accent)}
+.msg{font-size:0.8rem;text-align:center;margin:12px 0;min-height:20px}
+.msg.error{color:var(--red)}
+.msg.success{color:var(--green)}
+.btn{width:100%;background:var(--accent);color:white;border:none;border-radius:10px;padding:15px;font-family:'Sora',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;margin-top:8px}
+.btn.secondary{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.btn.green{background:var(--green);color:#000}
+.section-label{font-family:'IBM Plex Mono',monospace;font-size:0.62rem;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.drop-zone{border:2px dashed var(--border);border-radius:14px;padding:40px 20px;text-align:center;cursor:pointer;margin-bottom:20px;background:var(--surface)}
+.drop-zone.has-file{border-color:var(--accent);border-style:solid}
+.drop-icon{font-size:2.5rem;margin-bottom:10px}
+.drop-text{color:var(--muted);font-size:0.85rem}
+.drop-text strong{color:var(--text);display:block;margin-bottom:4px}
+.file-name{color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:0.8rem;margin-top:8px;word-break:break-all}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:20px}
+.toggle{position:relative;width:44px;height:24px}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:var(--border);border-radius:999px;transition:.2s}
+.slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:.2s}
+input:checked+.slider{background:var(--accent)}
+input:checked+.slider:before{transform:translateX(20px)}
+.progress-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 20px;margin-bottom:20px}
+.progress-msg{color:var(--muted);font-size:0.82rem;margin-bottom:14px}
+.progress-bar-bg{background:var(--border);border-radius:999px;height:6px;overflow:hidden}
+.progress-bar-fill{background:var(--accent);height:100%;border-radius:999px;transition:width .3s;width:0%}
+.progress-pct{font-family:'IBM Plex Mono',monospace;font-size:0.75rem;color:var(--accent);margin-top:8px;text-align:right}
+.result-card{background:var(--surface);border:1px solid var(--green);border-radius:14px;padding:24px 20px;margin-bottom:16px}
+.result-title{font-weight:700;font-size:1.1rem;margin-bottom:4px}
+.result-meta{color:var(--muted);font-size:0.8rem;margin-bottom:20px}
+.caption-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:0.82rem;line-height:1.6;margin-bottom:12px;white-space:pre-wrap;word-break:break-word}
+.copy-btn{background:var(--border);color:var(--text);border:none;border-radius:6px;padding:8px 16px;font-size:0.78rem;cursor:pointer;font-family:'IBM Plex Mono',monospace}
+.btn-row{display:flex;gap:10px;margin-top:16px}
+.btn-row .btn{flex:1}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">SHORTS BOT</div>
+  <div class="lic-badge" id="licBadge">NOT ACTIVATED</div>
+</div>
+
+<div class="screen active" id="screenLicense">
+  <div class="center-card">
+    <div class="big-icon">🔑</div>
+    <h1>Activate</h1>
+    <p class="subtitle">Enter your license key to start converting videos into Shorts</p>
+    <label class="input-label">LICENSE KEY</label>
+    <input type="text" id="keyInput" placeholder="XXXXX-XXXXX-XXXXX-XXXXX" maxlength="23"/>
+    <div class="msg" id="licMsg"></div>
+    <button class="btn" onclick="activate()">Activate License</button>
+  </div>
+</div>
+
+<div class="screen" id="screenUpload">
+  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+    <div class="drop-icon">🎬</div>
+    <div class="drop-text">
+      <strong>Tap to select video</strong>
+      MP4, MKV, AVI, MOV, WEBM and more
+    </div>
+    <div class="file-name" id="fileName"></div>
+  </div>
+  <input type="file" id="fileInput" accept="video/*" style="display:none" onchange="onFileSelect(this)"/>
+  <div class="section-label">Options</div>
+  <div class="toggle-row">
+    <span>Add title caption overlay</span>
+    <label class="toggle">
+      <input type="checkbox" id="captionToggle" checked/>
+      <span class="slider"></span>
+    </label>
+  </div>
+  <button class="btn" id="convertBtn" onclick="startConvert()" disabled>Convert to Short</button>
+</div>
+
+<div class="screen" id="screenProgress">
+  <div class="progress-card">
+    <div class="progress-msg" id="progressMsg">Starting...</div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-pct" id="progressPct">0%</div>
+  </div>
+</div>
+
+<div class="screen" id="screenResult">
+  <div class="result-card">
+    <div class="result-title" id="resultTitle">Short Ready! 🎉</div>
+    <div class="result-meta" id="resultMeta"></div>
+    <div class="section-label" style="margin-top:12px">Caption</div>
+    <div class="caption-box" id="captionBox"></div>
+    <button class="copy-btn" onclick="copyCaption()">📋 Copy Caption</button>
+    <div class="btn-row">
+      <button class="btn green" onclick="downloadShort()">⬇ Download Short</button>
+    </div>
+  </div>
+  <button class="btn secondary" onclick="goBack()">Convert Another Video</button>
+</div>
+
+<script>
+let selectedFile=null,currentJobId=null,currentOutput=null,pollInterval=null;
+
+document.getElementById("keyInput").addEventListener("input",function(e){
+  let v=e.target.value.replace(/[^A-Za-z0-9]/g,"").toUpperCase();
+  let f=v.match(/.{1,5}/g)?.join("-")||v;
+  e.target.value=f.slice(0,23);
+});
+
+async function activate(){
+  const key=document.getElementById("keyInput").value.trim();
+  if(!key){showMsg("Please enter your key.","error");return;}
+  showMsg("Checking...","");
+  const res=await fetch("/api/activate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({key})});
+  const data=await res.json();
+  if(data.valid){
+    showMsg(data.message,"success");
+    setTimeout(()=>showScreen("screenUpload"),800);
+    document.getElementById("licBadge").textContent="ACTIVE";
+    document.getElementById("licBadge").classList.add("active");
+  }else{showMsg(data.message,"error");}
+}
+
+function showMsg(msg,type){
+  const el=document.getElementById("licMsg");
+  el.textContent=msg;el.className="msg "+type;
+}
+
+function onFileSelect(input){
+  const file=input.files[0];
+  if(!file)return;
+  selectedFile=file;
+  document.getElementById("dropZone").classList.add("has-file");
+  document.getElementById("fileName").textContent=file.name;
+  document.getElementById("convertBtn").disabled=false;
+}
+
+async function startConvert(){
+  if(!selectedFile)return;
+  showScreen("screenProgress");
+  setProgress(5,"Uploading video...");
+  const form=new FormData();
+  form.append("video",selectedFile);
+  form.append("add_captions",document.getElementById("captionToggle").checked);
+  const res=await fetch("/api/upload",{method:"POST",body:form});
+  const data=await res.json();
+  if(data.error){alert("Error: "+data.error);showScreen("screenUpload");return;}
+  currentJobId=data.job_id;
+  setProgress(15,"Processing...");
+  pollInterval=setInterval(pollJob,1500);
+}
+
+async function pollJob(){
+  const res=await fetch("/api/job/"+currentJobId);
+  const data=await res.json();
+  setProgress(data.progress||0,data.message||"Processing...");
+  if(data.status==="done"){clearInterval(pollInterval);currentOutput=data.output;showResult(data);}
+  else if(data.status==="error"){clearInterval(pollInterval);alert("Error: "+data.message);showScreen("screenUpload");}
+}
+
+function setProgress(pct,msg){
+  document.getElementById("progressFill").style.width=pct+"%";
+  document.getElementById("progressPct").textContent=pct+"%";
+  document.getElementById("progressMsg").textContent=msg;
+}
+
+function showResult(data){
+  document.getElementById("resultTitle").textContent=`✅ "${data.title}" is Ready!`;
+  document.getElementById("resultMeta").textContent=`Size: ${data.size_mb} MB · 1080×1920`;
+  document.getElementById("captionBox").textContent=data.caption||"";
+  showScreen("screenResult");
+}
+
+function copyCaption(){
+  navigator.clipboard.writeText(document.getElementById("captionBox").textContent).then(()=>alert("Caption copied!"));
+}
+
+function downloadShort(){
+  if(currentOutput)window.location.href="/api/download/"+currentOutput;
+}
+
+function goBack(){
+  selectedFile=null;currentJobId=null;currentOutput=null;
+  document.getElementById("fileInput").value="";
+  document.getElementById("fileName").textContent="";
+  document.getElementById("dropZone").classList.remove("has-file");
+  document.getElementById("convertBtn").disabled=true;
+  showScreen("screenUpload");
+}
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+window.addEventListener("load",async()=>{
+  const res=await fetch("/api/check-license");
+  const data=await res.json();
+  if(data.valid){
+    showScreen("screenUpload");
+    document.getElementById("licBadge").textContent="ACTIVE";
+    document.getElementById("licBadge").classList.add("active");
+  }
+});
+</script>
+</body>
+  </html>
